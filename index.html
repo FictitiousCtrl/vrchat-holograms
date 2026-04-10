@@ -13,66 +13,56 @@
   --accent-dim:#2a3a5c;
 }
 body{font-family:var(--font-sans);background:var(--bg);color:var(--text);padding:16px;border-radius:12px;}
-
 .app-title{font-size:13px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;padding-bottom:14px;border-bottom:0.5px solid var(--border);}
-
 .panel{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;}
 .panel-label{font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
 .divider{border:none;border-top:0.5px solid var(--border);margin:14px 0;}
-
 .drop{border:0.5px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;cursor:pointer;color:var(--muted);font-size:13px;transition:all 0.15s;}
 .drop:hover,.drop.over{background:var(--surface2);border-color:var(--accent);color:var(--text);}
 .drop input{display:none;}
-
 .row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .row:last-child{margin-bottom:0;}
 .lbl{font-size:12px;color:var(--muted);min-width:100px;}
 .val{font-size:12px;font-weight:500;color:var(--text);min-width:36px;text-align:right;}
-
 input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:3px;background:var(--border2);border-radius:2px;outline:none;cursor:pointer;}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--surface);}
 input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--surface);}
-
 select{background:var(--surface2);border:0.5px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:5px 8px;cursor:pointer;outline:none;}
-
 .toggles{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
 .tog{display:flex;align-items:center;gap:7px;padding:5px 11px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:6px;cursor:pointer;font-size:12px;color:var(--muted);user-select:none;transition:all 0.12s;}
 .tog input{display:none;}
 .tog.on{background:var(--accent-dim);border-color:var(--accent);color:var(--text);}
 .pip{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background 0.12s;}
 .tog.on .pip{background:var(--accent);}
-
+.seg{display:flex;background:var(--surface2);border:0.5px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:12px;}
+.seg-btn{flex:1;padding:5px 10px;font-size:12px;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.12s;user-select:none;}
+.seg-btn.active{background:var(--accent-dim);color:var(--text);}
 .offset-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
 .off-field{display:flex;flex-direction:column;gap:5px;}
 .off-lbl{font-size:10px;color:var(--muted);letter-spacing:0.04em;}
 .off-field input[type=number]{width:100%;padding:5px 8px;font-size:12px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:6px;color:var(--text);outline:none;appearance:textfield;}
 .off-field input[type=number]::-webkit-inner-spin-button{display:none;}
 .off-field input[type=number]:focus{border-color:var(--accent);}
-
 #viewport{border-radius:8px;width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;background:#080808;border:0.5px solid var(--border);}
 #viewport.transparent{background:repeating-conic-gradient(#222 0% 25%,#2e2e2e 0% 50%) 0 0/14px 14px;}
 #viewport canvas{width:100%!important;height:100%!important;}
 #vp-msg{font-size:12px;color:#444;position:absolute;pointer-events:none;}
-
 .prog-track{height:2px;background:var(--border);border-radius:2px;margin:12px 0 6px;overflow:hidden;}
 .prog-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.05s;}
 #status{font-size:11px;color:var(--muted);min-height:15px;}
-
 .actions{display:flex;gap:8px;margin-bottom:4px;}
 .btn{padding:8px 18px;font-size:13px;border-radius:7px;cursor:pointer;font-family:var(--font-sans);border:none;transition:all 0.12s;font-weight:500;}
 .btn-primary{background:var(--accent);color:#fff;}
 .btn-primary:hover{background:#4a79e3;}
 .btn-primary:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed;}
 .btn-secondary{background:var(--surface2);color:var(--text);border:0.5px solid var(--border2);}
-.btn-secondary:hover{background:var(--border);border-color:var(--border2);}
+.btn-secondary:hover{background:var(--border);}
 .btn-secondary:disabled{opacity:0.4;cursor:not-allowed;}
-
 .tex-input{font-size:12px;color:var(--muted);cursor:pointer;}
 .tex-input::file-selector-button{background:var(--surface2);border:0.5px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:4px 10px;cursor:pointer;margin-right:8px;}
 </style>
 
 <h2 class="sr-only">Hologram capture tool</h2>
-
 <p class="app-title">Hologram capture</p>
 
 <div class="panel">
@@ -104,20 +94,24 @@ select{background:var(--surface2);border:0.5px solid var(--border2);border-radiu
   </div>
 
   <hr class="divider">
+  <p class="panel-label" style="margin-bottom:8px;">Camera type</p>
+  <div class="seg">
+    <div class="seg-btn active" id="seg-perspective">Perspective</div>
+    <div class="seg-btn" id="seg-orthographic">Orthographic</div>
+  </div>
 
   <div class="row">
-    <span class="lbl">Camera height</span>
+    <span class="lbl">Height</span>
     <input type="range" id="cam-elevation" min="-30" max="60" value="15" step="1">
     <span class="val" id="cam-elevation-val">15°</span>
   </div>
   <div class="row">
-    <span class="lbl">Camera distance</span>
+    <span class="lbl">Distance</span>
     <input type="range" id="cam-distance" min="1.0" max="4.0" value="1.8" step="0.1">
     <span class="val" id="cam-distance-val">1.8×</span>
   </div>
 
   <hr class="divider">
-
   <p class="panel-label" style="margin-bottom:10px;">Model offset</p>
   <div class="offset-grid">
     <div class="off-field"><span class="off-lbl">X — right</span><input type="number" id="offset-x" value="0" step="0.1"></div>
@@ -126,7 +120,6 @@ select{background:var(--surface2);border:0.5px solid var(--border2);border-radiu
   </div>
 
   <hr class="divider">
-
   <div class="row" style="margin-bottom:0;">
     <span class="lbl">Texture</span>
     <input type="file" id="tex-input" accept="image/*" class="tex-input">
@@ -177,6 +170,7 @@ const dropZone=$('drop-zone'),fileInput=$('file-input'),texInput=$('tex-input'),
 const viewport=$('viewport'),vpMsg=$('vp-msg');
 const togLightEl=$('tog-lighting'),togTransEl=$('tog-transparent');
 const toggleLighting=$('toggle-lighting'),toggleTransparent=$('toggle-transparent');
+const segPersp=$('seg-perspective'),segOrtho=$('seg-orthographic');
 const lightSlider=$('light-intensity'),lightVal=$('light-intensity-val');
 const camElev=$('cam-elevation'),camElevVal=$('cam-elevation-val');
 const camDist=$('cam-distance'),camDistVal=$('cam-distance-val');
@@ -186,20 +180,28 @@ const frameSizeSel=$('frame-size'),sheetLabel=$('sheet-label');
 const progressFill=$('progress-fill'),statusEl=$('status');
 const btnRender=$('btn-render'),btnDownload=$('btn-download');
 
-let scene,camera,renderer,lightPivot,dirLight,ambientLight,model,animId;
-let modelSize=1,modelBasePos=new THREE.Vector3(),outputCanvas=null,isTransparent=false;
+let scene,perspCamera,orthoCamera,renderer,lightPivot,dirLight,ambientLight,model,animId;
+let modelSize=1,modelBasePos=new THREE.Vector3(),outputCanvas=null,isTransparent=false,isOrtho=false;
 
 const fSize=()=>parseInt(frameSizeSel.value);
 const dMult=()=>parseFloat(camDist.value);
 const pAngle=()=>-THREE.MathUtils.degToRad(parseFloat(angleSlider.value));
 const getOff=()=>new THREE.Vector3(parseFloat(offsetX.value)||0,parseFloat(offsetY.value)||0,parseFloat(offsetZ.value)||0);
+const activeCamera=()=>isOrtho?orthoCamera:perspCamera;
 const syncTog=(lbl,cb)=>{ if(cb.checked)lbl.classList.add('on');else lbl.classList.remove('on'); };
 
 frameSizeSel.addEventListener('change',()=>{ sheetLabel.textContent=`→ ${fSize()*COLS} × ${fSize()*COLS} sheet`; });
-camElev.addEventListener('input',()=>{ camElevVal.textContent=camElev.value+'°'; if(camera)updateCamera(pAngle()); });
-camDist.addEventListener('input',()=>{ camDistVal.textContent=parseFloat(camDist.value).toFixed(1)+'×'; if(camera&&model)refitCamera(); });
-angleSlider.addEventListener('input',()=>{ angleVal.textContent=angleSlider.value+'°'; if(camera)updateCamera(pAngle()); });
+camElev.addEventListener('input',()=>{ camElevVal.textContent=camElev.value+'°'; if(perspCamera)updateCamera(pAngle()); });
+camDist.addEventListener('input',()=>{ camDistVal.textContent=parseFloat(camDist.value).toFixed(1)+'×'; if(perspCamera&&model)refitCamera(); });
+angleSlider.addEventListener('input',()=>{ angleVal.textContent=angleSlider.value+'°'; if(perspCamera)updateCamera(pAngle()); });
 lightSlider.addEventListener('input',()=>{ const v=parseFloat(lightSlider.value); lightVal.textContent=v.toFixed(1); if(dirLight)dirLight.intensity=v; });
+
+segPersp.addEventListener('click',()=>{
+  if(isOrtho){ isOrtho=false; segPersp.classList.add('active'); segOrtho.classList.remove('active'); updateCamera(pAngle()); }
+});
+segOrtho.addEventListener('click',()=>{
+  if(!isOrtho){ isOrtho=true; segOrtho.classList.add('active'); segPersp.classList.remove('active'); updateCamera(pAngle()); }
+});
 
 toggleLighting.addEventListener('change',()=>{
   syncTog(togLightEl,toggleLighting);
@@ -220,7 +222,8 @@ toggleTransparent.addEventListener('change',()=>{
 [offsetX,offsetY,offsetZ].forEach(el=>el.addEventListener('input',()=>{
   if(!model)return;
   model.position.copy(modelBasePos).add(getOff());
-  camera.userData.target=model.position.clone();
+  perspCamera.userData.target=model.position.clone();
+  orthoCamera.userData.target=model.position.clone();
   updateCamera(pAngle());
 }));
 
@@ -231,8 +234,13 @@ function initThree(){
   renderer.setSize(vw,vw); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.shadowMap.enabled=true;
   vpMsg.style.display='none'; viewport.appendChild(renderer.domElement);
-  camera=new THREE.PerspectiveCamera(40,1,0.1,100000);
-  camera.userData.basedist=2; camera.userData.target=new THREE.Vector3();
+
+  perspCamera=new THREE.PerspectiveCamera(40,1,0.1,100000);
+  perspCamera.userData.basedist=2; perspCamera.userData.target=new THREE.Vector3();
+
+  orthoCamera=new THREE.OrthographicCamera(-1,1,1,-1,0.01,100000);
+  orthoCamera.userData.basedist=2; orthoCamera.userData.target=new THREE.Vector3();
+
   ambientLight=new THREE.AmbientLight(0xffffff,0.5); scene.add(ambientLight);
   lightPivot=new THREE.Object3D(); scene.add(lightPivot);
   dirLight=new THREE.DirectionalLight(0xffffff,1.2); dirLight.position.set(2,3,2);
@@ -240,19 +248,36 @@ function initThree(){
   animate();
 }
 
-function animate(){ animId=requestAnimationFrame(animate); renderer.render(scene,camera); }
+function animate(){ animId=requestAnimationFrame(animate); renderer.render(scene,activeCamera()); }
+
+function updateOrthoFrustum(dist){
+  const half=dist*0.5;
+  orthoCamera.left=-half; orthoCamera.right=half;
+  orthoCamera.top=half; orthoCamera.bottom=-half;
+  orthoCamera.near=dist*0.01; orthoCamera.far=dist*10;
+  orthoCamera.updateProjectionMatrix();
+}
 
 function updateCamera(a=0){
   const elev=THREE.MathUtils.degToRad(parseFloat(camElev.value));
-  const dist=camera.userData.basedist*dMult();
-  const t=camera.userData.target;
-  camera.near=dist*0.01; camera.far=dist*10; camera.updateProjectionMatrix();
-  camera.position.set(t.x+dist*Math.cos(elev)*Math.sin(a),t.y+dist*Math.sin(elev),t.z+dist*Math.cos(elev)*Math.cos(a));
-  camera.lookAt(t); lightPivot.position.copy(t); lightPivot.rotation.y=a;
+  const dist=perspCamera.userData.basedist*dMult();
+  const t=perspCamera.userData.target;
+
+  perspCamera.near=dist*0.01; perspCamera.far=dist*10; perspCamera.updateProjectionMatrix();
+  perspCamera.position.set(t.x+dist*Math.cos(elev)*Math.sin(a),t.y+dist*Math.sin(elev),t.z+dist*Math.cos(elev)*Math.cos(a));
+  perspCamera.lookAt(t);
+
+  updateOrthoFrustum(dist);
+  orthoCamera.userData.target=t.clone();
+  orthoCamera.position.set(t.x+dist*Math.cos(elev)*Math.sin(a),t.y+dist*Math.sin(elev),t.z+dist*Math.cos(elev)*Math.cos(a));
+  orthoCamera.lookAt(t);
+
+  lightPivot.position.copy(t); lightPivot.rotation.y=a;
 }
 
 function refitCamera(){
-  camera.userData.basedist=(modelSize/2)/Math.tan(THREE.MathUtils.degToRad(camera.fov)/2);
+  perspCamera.userData.basedist=(modelSize/2)/Math.tan(THREE.MathUtils.degToRad(perspCamera.fov)/2);
+  orthoCamera.userData.basedist=perspCamera.userData.basedist;
   updateCamera(pAngle());
 }
 
@@ -262,7 +287,9 @@ function fitModel(){
   const sz=box.getSize(new THREE.Vector3());
   modelSize=Math.max(sz.x,sz.y,sz.z);
   model.position.sub(ctr); modelBasePos.copy(model.position);
-  camera.userData.target=new THREE.Vector3(); refitCamera();
+  perspCamera.userData.target=new THREE.Vector3();
+  orthoCamera.userData.target=new THREE.Vector3();
+  refitCamera();
 }
 
 function applyRenderMode(lit){
@@ -316,26 +343,38 @@ async function renderSheet(){
   if(!model)return;
   cancelAnimationFrame(animId);
   const fs=fSize(),ss=fs*COLS;
-  const dist=camera.userData.basedist*dMult();
+  const dist=perspCamera.userData.basedist*dMult();
   const elev=THREE.MathUtils.degToRad(parseFloat(camElev.value));
-  const target=camera.userData.target.clone();
+  const target=perspCamera.userData.target.clone();
   btnRender.disabled=true; btnDownload.disabled=true; progressFill.style.width='0%';
+
   const offR=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true,alpha:true});
   offR.setSize(fs,fs); offR.shadowMap.enabled=true;
   if(isTransparent)offR.setClearColor(0x000000,0);else offR.setClearColor(0x080808,1);
-  const offCam=new THREE.PerspectiveCamera(40,1,dist*0.01,dist*10);
+
+  let renderCam;
+  if(isOrtho){
+    const half=dist*0.5;
+    renderCam=new THREE.OrthographicCamera(-half,half,half,-half,dist*0.01,dist*10);
+  } else {
+    renderCam=new THREE.PerspectiveCamera(40,1,dist*0.01,dist*10);
+  }
+
   const sheet=document.createElement('canvas'); sheet.width=ss; sheet.height=ss;
   const ctx=sheet.getContext('2d');
+
   for(let i=0;i<TOTAL;i++){
     const a=-(i/TOTAL)*Math.PI*2;
-    offCam.position.set(target.x+dist*Math.cos(elev)*Math.sin(a),target.y+dist*Math.sin(elev),target.z+dist*Math.cos(elev)*Math.cos(a));
-    offCam.lookAt(target); lightPivot.position.copy(target); lightPivot.rotation.y=a;
-    offR.render(scene,offCam);
+    renderCam.position.set(target.x+dist*Math.cos(elev)*Math.sin(a),target.y+dist*Math.sin(elev),target.z+dist*Math.cos(elev)*Math.cos(a));
+    renderCam.lookAt(target);
+    lightPivot.position.copy(target); lightPivot.rotation.y=a;
+    offR.render(scene,renderCam);
     ctx.drawImage(offR.domElement,(i%COLS)*fs,Math.floor(i/COLS)*fs,fs,fs);
     progressFill.style.width=Math.round(((i+1)/TOTAL)*100)+'%';
     statusEl.textContent=`Rendering frame ${i+1} of ${TOTAL}`;
     await new Promise(r=>setTimeout(r,0));
   }
+
   lightPivot.rotation.y=pAngle(); offR.dispose(); outputCanvas=sheet;
   const prev=document.createElement('canvas');
   const sc=Math.min(1,480/ss); prev.width=Math.round(ss*sc); prev.height=Math.round(ss*sc);

@@ -1,4 +1,14 @@
+Here is the complete, merged HTML file. It includes the updated UI with three separate download buttons, the Three.js material override logic for the Normal and Depth passes, and the dynamic camera frustum adjustments so your depth maps use the full 0-to-1 grayscale range.
 
+You can save this directly as an `.html` file and open it in your browser.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hologram Capture Tool</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -12,7 +22,7 @@
   --accent:#5b8af4;
   --accent-dim:#2a3a5c;
 }
-body{font-family:var(--font-sans);background:var(--bg);color:var(--text);padding:16px;border-radius:12px;}
+body{font-family:var(--font-sans, system-ui, sans-serif);background:var(--bg);color:var(--text);padding:16px;border-radius:12px;max-width:800px;margin:0 auto;}
 .app-title{font-size:13px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;padding-bottom:14px;border-bottom:0.5px solid var(--border);}
 .panel{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;}
 .panel-label{font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
@@ -50,19 +60,21 @@ select{background:var(--surface2);border:0.5px solid var(--border2);border-radiu
 .prog-track{height:2px;background:var(--border);border-radius:2px;margin:12px 0 6px;overflow:hidden;}
 .prog-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.05s;}
 #status{font-size:11px;color:var(--muted);min-height:15px;}
-.actions{display:flex;gap:8px;margin-bottom:4px;}
-.btn{padding:8px 18px;font-size:13px;border-radius:7px;cursor:pointer;font-family:var(--font-sans);border:none;transition:all 0.12s;font-weight:500;}
+.actions{display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap;}
+.btn{padding:8px 18px;font-size:13px;border-radius:7px;cursor:pointer;border:none;transition:all 0.12s;font-weight:500;}
 .btn-primary{background:var(--accent);color:#fff;}
 .btn-primary:hover{background:#4a79e3;}
 .btn-primary:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed;}
 .btn-secondary{background:var(--surface2);color:var(--text);border:0.5px solid var(--border2);}
-.btn-secondary:hover{background:var(--border);}
+.btn-secondary:hover:not(:disabled){background:var(--border);}
 .btn-secondary:disabled{opacity:0.4;cursor:not-allowed;}
 .tex-input{font-size:12px;color:var(--muted);cursor:pointer;}
 .tex-input::file-selector-button{background:var(--surface2);border:0.5px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:4px 10px;cursor:pointer;margin-right:8px;}
 </style>
+</head>
+<body>
 
-<h2 class="sr-only">Hologram capture tool</h2>
+<h2 class="sr-only" style="display:none;">Hologram capture tool</h2>
 <p class="app-title">Hologram capture</p>
 
 <div class="panel">
@@ -152,8 +164,10 @@ select{background:var(--surface2);border:0.5px solid var(--border2);border-radiu
 </div>
 
 <div class="actions">
-  <button class="btn btn-primary" id="btn-render" disabled>Render sheet</button>
-  <button class="btn btn-secondary" id="btn-download" disabled>Download PNG</button>
+  <button class="btn btn-primary" id="btn-render" disabled>Render sheets</button>
+  <button class="btn btn-secondary" id="btn-dl-albedo" disabled>Albedo</button>
+  <button class="btn btn-secondary" id="btn-dl-normal" disabled>Normal</button>
+  <button class="btn btn-secondary" id="btn-dl-depth" disabled>Depth</button>
 </div>
 
 <script type="importmap">
@@ -178,10 +192,14 @@ const offsetX=$('offset-x'),offsetY=$('offset-y'),offsetZ=$('offset-z');
 const angleSlider=$('angle-slider'),angleVal=$('angle-val');
 const frameSizeSel=$('frame-size'),sheetLabel=$('sheet-label');
 const progressFill=$('progress-fill'),statusEl=$('status');
-const btnRender=$('btn-render'),btnDownload=$('btn-download');
+
+// Updated Buttons and Output Variables
+const btnRender=$('btn-render');
+const btnDlAlbedo=$('btn-dl-albedo'), btnDlNormal=$('btn-dl-normal'), btnDlDepth=$('btn-dl-depth');
+let outputAlbedo=null, outputNormal=null, outputDepth=null;
 
 let scene,perspCamera,orthoCamera,renderer,lightPivot,dirLight,ambientLight,model,animId;
-let modelSize=1,modelBasePos=new THREE.Vector3(),outputCanvas=null,isTransparent=false,isOrtho=false;
+let modelSize=1,modelBasePos=new THREE.Vector3(),isTransparent=false,isOrtho=false;
 
 const fSize=()=>parseInt(frameSizeSel.value);
 const dMult=()=>parseFloat(camDist.value);
@@ -339,58 +357,117 @@ dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('over'));
 dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('over');if(e.dataTransfer.files[0])loadModel(e.dataTransfer.files[0]);});
 fileInput.addEventListener('change',()=>{if(fileInput.files[0])loadModel(fileInput.files[0]);});
 
+// Updated renderSheet logic
 async function renderSheet(){
   if(!model)return;
   cancelAnimationFrame(animId);
-  const fs=fSize(),ss=fs*COLS;
+  const fs=fSize(), ss=fs*COLS;
   const dist=perspCamera.userData.basedist*dMult();
   const elev=THREE.MathUtils.degToRad(parseFloat(camElev.value));
   const target=perspCamera.userData.target.clone();
-  btnRender.disabled=true; btnDownload.disabled=true; progressFill.style.width='0%';
+  
+  btnRender.disabled=true; btnDlAlbedo.disabled=true; btnDlNormal.disabled=true; btnDlDepth.disabled=true;
+  progressFill.style.width='0%';
 
   const offR=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true,alpha:true});
   offR.setSize(fs,fs); offR.shadowMap.enabled=true;
-  if(isTransparent)offR.setClearColor(0x000000,0);else offR.setClearColor(0x080808,1);
+
+  // CRITICAL: Tighten camera near/far for the Depth pass to maximize the 0-to-1 grayscale range
+  const tightNear = Math.max(0.01, dist - (modelSize * 0.75));
+  const tightFar = dist + (modelSize * 0.75);
 
   let renderCam;
   if(isOrtho){
     const half=dist*0.5;
-    renderCam=new THREE.OrthographicCamera(-half,half,half,-half,dist*0.01,dist*10);
+    renderCam=new THREE.OrthographicCamera(-half,half,half,-half, tightNear, tightFar);
   } else {
-    renderCam=new THREE.PerspectiveCamera(40,1,dist*0.01,dist*10);
+    renderCam=new THREE.PerspectiveCamera(40,1, tightNear, tightFar);
   }
 
-  const sheet=document.createElement('canvas'); sheet.width=ss; sheet.height=ss;
-  const ctx=sheet.getContext('2d');
+  // Initialize the three separate sheet canvases
+  const sheetA=document.createElement('canvas'); sheetA.width=ss; sheetA.height=ss; const ctxA=sheetA.getContext('2d');
+  const sheetN=document.createElement('canvas'); sheetN.width=ss; sheetN.height=ss; const ctxN=sheetN.getContext('2d');
+  const sheetD=document.createElement('canvas'); sheetD.width=ss; sheetD.height=ss; const ctxD=sheetD.getContext('2d');
 
-  for(let i=0;i<TOTAL;i++){
+  const normalMat = new THREE.MeshNormalMaterial();
+  const depthMat = new THREE.MeshDepthMaterial();
+
+  for(let i=0; i<TOTAL; i++){
     const a=-(i/TOTAL)*Math.PI*2;
     renderCam.position.set(target.x+dist*Math.cos(elev)*Math.sin(a),target.y+dist*Math.sin(elev),target.z+dist*Math.cos(elev)*Math.cos(a));
     renderCam.lookAt(target);
     lightPivot.position.copy(target); lightPivot.rotation.y=a;
+
+    const x = (i%COLS)*fs;
+    const y = Math.floor(i/COLS)*fs;
+
+    // 1. Render Albedo (Standard)
+    scene.overrideMaterial = null;
+    offR.setClearColor(isTransparent?0x000000:0x080808, isTransparent?0:1);
     offR.render(scene,renderCam);
-    ctx.drawImage(offR.domElement,(i%COLS)*fs,Math.floor(i/COLS)*fs,fs,fs);
+    ctxA.drawImage(offR.domElement, x, y, fs, fs);
+
+    // 2. Render Normal (View-Space)
+    scene.overrideMaterial = normalMat;
+    // Set background to flat forward-facing normal (128, 128, 255)
+    offR.setClearColor(0x8080ff, isTransparent?0:1); 
+    offR.render(scene,renderCam);
+    ctxN.drawImage(offR.domElement, x, y, fs, fs);
+
+    // 3. Render Depth
+    scene.overrideMaterial = depthMat;
+    // Set background to black (furthest distance)
+    offR.setClearColor(0x000000, isTransparent?0:1); 
+    offR.render(scene,renderCam);
+    ctxD.drawImage(offR.domElement, x, y, fs, fs);
+
     progressFill.style.width=Math.round(((i+1)/TOTAL)*100)+'%';
     statusEl.textContent=`Rendering frame ${i+1} of ${TOTAL}`;
     await new Promise(r=>setTimeout(r,0));
   }
 
-  lightPivot.rotation.y=pAngle(); offR.dispose(); outputCanvas=sheet;
+  lightPivot.rotation.y=pAngle(); 
+  offR.dispose(); 
+  scene.overrideMaterial = null; // Clear override
+  
+  // Store results for downloads
+  outputAlbedo=sheetA; outputNormal=sheetN; outputDepth=sheetD;
+
+  // Show Albedo in the preview window
   const prev=document.createElement('canvas');
   const sc=Math.min(1,480/ss); prev.width=Math.round(ss*sc); prev.height=Math.round(ss*sc);
-  prev.getContext('2d').drawImage(sheet,0,0,prev.width,prev.height);
+  prev.getContext('2d').drawImage(sheetA,0,0,prev.width,prev.height);
   prev.style.cssText='width:100%;height:100%;object-fit:contain;';
   viewport.innerHTML=''; viewport.appendChild(prev);
+  
   statusEl.textContent=`Done — ${TOTAL} frames at ${fs}px → ${ss}×${ss}`;
-  progressFill.style.width='100%'; btnRender.disabled=false; btnDownload.disabled=false; animate();
+  progressFill.style.width='100%'; 
+  btnRender.disabled=false; btnDlAlbedo.disabled=false; btnDlNormal.disabled=false; btnDlDepth.disabled=false;
+  animate();
 }
 
 btnRender.addEventListener('click',renderSheet);
-btnDownload.addEventListener('click',()=>{
-  if(!outputCanvas)return;
-  outputCanvas.toBlob(blob=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='hologram_sheet.png';a.click();URL.revokeObjectURL(a.href);},'image/png');
-});
+
+// Download logic map
+const downloadCanvas = (canvas, filename) => {
+  if(!canvas) return;
+  canvas.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }, 'image/png');
+};
+
+btnDlAlbedo.addEventListener('click', () => downloadCanvas(outputAlbedo, 'hologram_albedo.png'));
+btnDlNormal.addEventListener('click', () => downloadCanvas(outputNormal, 'hologram_normal.png'));
+btnDlDepth.addEventListener('click', () => downloadCanvas(outputDepth, 'hologram_depth.png'));
 
 initThree();
 sheetLabel.textContent=`→ ${fSize()*COLS} × ${fSize()*COLS} sheet`;
 </script>
+</body>
+</html>
+
+```
